@@ -20,12 +20,16 @@ public struct ServiceConfig: Equatable, Sendable {
     /// (Claude). Blank means "do not send it" for the OpenAI format and "low"
     /// for Claude, the fastest setting there.
     public var reasoningEffort: String
+    /// Tried instead when the main model is overloaded or over its limit
+    /// (HTTP 429/5xx). Blank means "wait a moment and retry the main model".
+    public var backupModel: String
 
-    public init(format: APIFormat, baseURL: String, model: String, reasoningEffort: String) {
+    public init(format: APIFormat, baseURL: String, model: String, reasoningEffort: String, backupModel: String = "") {
         self.format = format
         self.baseURL = baseURL
         self.model = model
         self.reasoningEffort = reasoningEffort
+        self.backupModel = backupModel
     }
 }
 
@@ -36,10 +40,23 @@ public struct ServicePreset: Equatable, Sendable, Identifiable {
     public let baseURL: String
     public let model: String
     public let reasoningEffort: String
+    public let backupModel: String
     public let note: String
 
+    public init(id: String, name: String, format: APIFormat, baseURL: String, model: String,
+                reasoningEffort: String, backupModel: String = "", note: String) {
+        self.id = id
+        self.name = name
+        self.format = format
+        self.baseURL = baseURL
+        self.model = model
+        self.reasoningEffort = reasoningEffort
+        self.backupModel = backupModel
+        self.note = note
+    }
+
     public var config: ServiceConfig {
-        ServiceConfig(format: format, baseURL: baseURL, model: model, reasoningEffort: reasoningEffort)
+        ServiceConfig(format: format, baseURL: baseURL, model: model, reasoningEffort: reasoningEffort, backupModel: backupModel)
     }
 }
 
@@ -51,12 +68,13 @@ public enum ServicePresets {
     public static let all: [ServicePreset] = [
         ServicePreset(
             id: "gemini-lite",
-            name: "Google Gemini Flash-Lite",
+            name: "Google Gemini",
             format: .openAI,
             baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
             model: "gemini-flash-lite-latest",
             reasoningEffort: "",
-            note: "Built for speed and reads images well. Get a key at aistudio.google.com."
+            backupModel: "gemini-flash-lite-latest",
+            note: "Fast and reads images well. Free keys at aistudio.google.com; free-tier requests are the first turned away when a model is busy, so keep a backup model set."
         ),
         ServicePreset(
             id: "groq",

@@ -20,6 +20,7 @@ final class Settings: ObservableObject {
     @Published var baseURL: String = "" { didSet { saveService() } }
     @Published var model: String = "" { didSet { saveService() } }
     @Published var reasoningEffort: String = "" { didSet { saveService() } }
+    @Published var backupModel: String = "" { didSet { saveService() } }
 
     @Published var instructions: String { didSet { defaults.set(instructions, forKey: Key.instructions) } }
     @Published var cloudTimeout: Double { didSet { defaults.set(cloudTimeout, forKey: Key.timeout) } }
@@ -58,7 +59,7 @@ final class Settings: ObservableObject {
     var preset: ServicePreset { ServicePresets.preset(id: presetID) }
 
     var serviceConfig: ServiceConfig {
-        ServiceConfig(format: preset.format, baseURL: baseURL, model: model, reasoningEffort: reasoningEffort)
+        ServiceConfig(format: preset.format, baseURL: baseURL, model: model, reasoningEffort: reasoningEffort, backupModel: backupModel)
     }
 
     /// The saved config for any service, not just the selected one (used by "Compare all").
@@ -68,12 +69,13 @@ final class Settings: ObservableObject {
             format: preset.format,
             baseURL: defaults.string(forKey: Key.service(id, "baseURL")) ?? preset.baseURL,
             model: defaults.string(forKey: Key.service(id, "model")) ?? preset.model,
-            reasoningEffort: defaults.string(forKey: Key.service(id, "effort")) ?? preset.reasoningEffort
+            reasoningEffort: defaults.string(forKey: Key.service(id, "effort")) ?? preset.reasoningEffort,
+            backupModel: defaults.string(forKey: Key.service(id, "backupModel")) ?? preset.backupModel
         )
     }
 
     func resetService() {
-        for field in ["baseURL", "model", "effort"] {
+        for field in ["baseURL", "model", "effort", "backupModel"] {
             defaults.removeObject(forKey: Key.service(presetID, field))
         }
         loadService()
@@ -109,6 +111,7 @@ final class Settings: ObservableObject {
         baseURL = config.baseURL
         model = config.model
         reasoningEffort = config.reasoningEffort
+        backupModel = config.backupModel
     }
 
     private func saveService() {
@@ -116,6 +119,7 @@ final class Settings: ObservableObject {
         defaults.set(baseURL, forKey: Key.service(presetID, "baseURL"))
         defaults.set(model, forKey: Key.service(presetID, "model"))
         defaults.set(reasoningEffort, forKey: Key.service(presetID, "effort"))
+        defaults.set(backupModel, forKey: Key.service(presetID, "backupModel"))
     }
 
     private func saveCombo(_ combo: KeyCombo, _ key: String) {

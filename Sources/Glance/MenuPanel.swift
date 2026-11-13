@@ -135,6 +135,22 @@ struct MenuPanel: View {
                     .disabled(keyDraft.isEmpty)
                 }
             }
+            FieldRow("If busy") {
+                HStack(spacing: 6) {
+                    TextField("backup model (optional)", text: $settings.backupModel)
+                        .textFieldStyle(.roundedBorder)
+                    Menu("List") {
+                        if controller.fetchedModels.isEmpty {
+                            Button("Fetch models from the service") { controller.fetchModels() }
+                        } else {
+                            ForEach(controller.fetchedModels, id: \.self) { name in
+                                Button(name) { settings.backupModel = name }
+                            }
+                        }
+                    }
+                    .fixedSize()
+                }
+            }
             FieldRow("Thinking") {
                 TextField(settings.preset.format == .anthropic ? "low" : "service default", text: $settings.reasoningEffort)
                     .textFieldStyle(.roundedBorder)

@@ -107,13 +107,13 @@ final class AppController: ObservableObject {
 
             let client = CloudClient(config: config, apiKey: key)
             let jpeg = shot.jpegBase64
-            let (raw, source) = try await runHedged(
+            let (reply, source) = try await runHedged(
                 cloud: { try await client.analyze(jpegBase64: jpeg, instructions: instructions) },
                 local: nil, // The local backup model plugs in here later.
                 policy: HedgePolicy(cloudTimeout: timeout, hedgeDelay: 1.5, localTimeout: 30)
             )
 
-            let answer = AnswerParser.parse(raw)
+            let answer = AnswerParser.parse(reply.text)
             var dot: DotPlacement?
             if let target = answer.target {
                 var point = CGPoint(x: target.x, y: target.y)
@@ -130,8 +130,9 @@ final class AppController: ObservableObject {
             guard !Task.isCancelled, model.finish(id: id, answer: answer) else { return }
             activeDot = dot
             lastAnswer = answer.text
-            var info = "\(preset.name) · \(source == .cloud ? "cloud" : "backup") · "
-                + String(format: "%.1f s", Date().timeIntervalSince(started))
+            var info = "\(reply.model) · " + String(format: "%.1f s", Date().timeIntervalSince(started))
+            if reply.usedBackup { info += " · main model was busy" }
+            if source == .local { info += " · answered on this Mac" }
             if dot?.snapped == true { info += " · dot snapped to text" }
             lastInfo = info
             render()
@@ -286,13 +287,15 @@ final class AppController: ObservableObject {
                 let client = CloudClient(config: config, apiKey: key)
                 let started = Date()
                 do {
-                    _ = try await withTimeout(seconds: 30) {
+                    let reply = try await withTimeout(seconds: 30) {
                         try await client.analyze(
                             jpegBase64: ImageTools.testImageBase64,
                             instructions: "This is a connection test. Set text to \"ok\" and has_target to false."
                         )
                     }
-                    testLines.append("\(preset.name): " + String(format: "%.1f s", Date().timeIntervalSince(started)))
+                    var line = "\(preset.name), \(reply.model): " + String(format: "%.1f s", Date().timeIntervalSince(started))
+                    if reply.usedBackup { line += " (main model busy, backup answered)" }
+                    testLines.append(line)
                 } catch {
                     testLines.append("\(preset.name): failed. \(Self.describe(error, timeout: 30))")
                 }
