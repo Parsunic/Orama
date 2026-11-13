@@ -21,7 +21,7 @@ enum CaptureError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .noPermission:
-            return "Glance needs Screen Recording permission. Open the menu bar icon to turn it on."
+            return "Glance can't see the screen yet. Turn it on in Screen & System Audio Recording, then use Reopen Glance in the menu bar."
         case .displayGone:
             return "That display was disconnected."
         case .encodeFailed:
@@ -31,6 +31,8 @@ enum CaptureError: LocalizedError {
 }
 
 enum CaptureService {
+    private static var askedForPermission = false
+
     /// One still frame of a whole display, with Glance's own windows left out
     /// so it never analyses its own answer box.
     static func capture(displayID: CGDirectDisplayID, maxLongEdge: Int) async throws -> Screenshot {
@@ -39,7 +41,13 @@ enum CaptureService {
             content = try await SCShareableContent.excludingDesktopWindows(false, onScreenWindowsOnly: true)
         } catch {
             if !CGPreflightScreenCaptureAccess() {
-                _ = CGRequestScreenCaptureAccess() // shows the system prompt the first time
+                // Show the system prompt once per launch, not on every shortcut
+                // press. A permission switched on in System Settings usually
+                // only takes effect after Glance is quit and reopened.
+                if !askedForPermission {
+                    askedForPermission = true
+                    _ = CGRequestScreenCaptureAccess()
+                }
                 throw CaptureError.noPermission
             }
             throw error
