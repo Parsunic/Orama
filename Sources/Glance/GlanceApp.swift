@@ -11,7 +11,7 @@ struct GlanceApp: App {
         MenuBarExtra {
             MenuPanel(controller: appDelegate.controller, settings: appDelegate.controller.settings)
         } label: {
-            MenuBarIcon(controller: appDelegate.controller)
+            MenuBarIcon(volume: appDelegate.volume)
         }
         .menuBarExtraStyle(.window)
     }
@@ -20,6 +20,7 @@ struct GlanceApp: App {
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let controller = AppController()
+    let volume = VolumeMonitor()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Belt and braces: Info.plist already hides the Dock icon, but this also
@@ -29,10 +30,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+/// The menu bar icon shows the Mac's current volume and nothing else. It never
+/// reflects what Glance is doing (working, answers hidden), so it looks the same
+/// in a screenshot or screen share whatever state Glance is in.
 struct MenuBarIcon: View {
-    @ObservedObject var controller: AppController
+    @ObservedObject var volume: VolumeMonitor
 
     var body: some View {
-        Image(systemName: controller.menuIconName)
+        Image(systemName: volume.symbolName)
     }
 }

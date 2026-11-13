@@ -4,7 +4,14 @@ The **Glance** app: a small Mac menu bar helper. Press a shortcut and it takes a
 an AI about it, and shows a short answer in a quiet floating box. If the
 answer is about a specific spot (a button, a field, an error), it also draws a
 very faint dot there. There is no Dock icon and no window: everything lives
-under the eye icon in the menu bar.
+under a small speaker icon in the menu bar.
+
+That icon shows your Mac's current volume (no waves when silent, one to three
+waves as it goes up, a crossed-out speaker when muted) and nothing else. It
+never changes to show what Glance is doing, so it looks the same in a
+screenshot or screen share whether answers are showing, hidden or on their way.
+If you'd rather not have two speaker icons, hide the system one in System
+Settings → Control Center → Sound → "Don't Show in Menu Bar".
 
 ## The two shortcuts
 
@@ -43,7 +50,7 @@ That builds `build/Glance.app` and opens it. To put it in Applications (which
 "Open Glance when I log in" needs), run `./build.sh --install` instead.
 
 **First run:**
-1. Click the eye icon in the menu bar.
+1. Click the speaker icon in the menu bar.
 2. Pick a service (Google Gemini Flash-Lite is the default, built for speed), paste your API key and press **Save**.
 3. Press ⌘⇧Space. macOS asks for Screen Recording permission. Allow it in System Settings, then press **Reopen Glance** in the menu. macOS usually only applies this permission after a restart.
 

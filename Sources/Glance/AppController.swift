@@ -197,11 +197,6 @@ final class AppController: ObservableObject {
 
     // MARK: Menu actions
 
-    var menuIconName: String {
-        if model.isBusy { return "ellipsis.circle" }
-        return model.switchOn ? "eye" : "eye.slash"
-    }
-
     var statusLine: String {
         let base: String
         switch model.phase {
